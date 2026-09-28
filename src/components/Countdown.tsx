@@ -1,5 +1,6 @@
 import { Badge, Box, HStack, Progress, Stack, Text } from '@chakra-ui/react'
 import { ARRIVAL, TZ_ES, TZ_RO } from '../data/route'
+import { useI18n } from '../i18n/context'
 import { formatClock, remaining, type Phase } from '../lib/time'
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -23,31 +24,32 @@ function Unit({ value, label }: { value: string | number; label: string }) {
 }
 
 export function Countdown({ now, phase }: { now: number; phase: Phase }) {
+  const { t, locale } = useI18n()
   const r = remaining(ARRIVAL, now)
 
   return (
     <Stack gap="2" align={{ base: 'stretch', md: 'flex-end' }}>
       {r.done ? (
         <Text fontSize={{ base: 'xl', md: '3xl' }} fontWeight="black">
-          ¡Estoy en Sevilla! 🎉
+          {t.done}
         </Text>
       ) : (
         <HStack gap={{ base: '1', md: '3' }} justify={{ base: 'center', md: 'flex-end' }}>
-          <Unit value={r.days} label="zile" />
+          <Unit value={r.days} label={t.units.days} />
           <Text fontSize="2xl" fontWeight="bold" color="fg.subtle">:</Text>
-          <Unit value={pad(r.hours)} label="ore" />
+          <Unit value={pad(r.hours)} label={t.units.hours} />
           <Text fontSize="2xl" fontWeight="bold" color="fg.subtle">:</Text>
-          <Unit value={pad(r.minutes)} label="min" />
+          <Unit value={pad(r.minutes)} label={t.units.minutes} />
           <Text fontSize="2xl" fontWeight="bold" color="fg.subtle">:</Text>
-          <Unit value={pad(r.seconds)} label="sec" />
+          <Unit value={pad(r.seconds)} label={t.units.seconds} />
         </HStack>
       )}
       <HStack gap="2" justify={{ base: 'center', md: 'flex-end' }} wrap="wrap">
         <Badge colorPalette="yellow" variant="solid">
-          {phase.label}
+          {t.phase[phase.kind]}
         </Badge>
         <Text fontSize="xs" color="fg.muted">
-          Sosire: {formatClock(ARRIVAL, TZ_ES)} Sevilla · {formatClock(ARRIVAL, TZ_RO)} România
+          {t.arrival(formatClock(ARRIVAL, TZ_ES, locale), formatClock(ARRIVAL, TZ_RO, locale))}
         </Text>
       </HStack>
       <Box w={{ base: 'full', md: '280px' }}>

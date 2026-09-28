@@ -6,6 +6,7 @@ import { FaBus, FaHouse, FaPersonWalking, FaPlane, FaPlaneDeparture, FaStar } fr
 import { LuMaximize } from 'react-icons/lu'
 import Map, { Layer, Marker, NavigationControl, Source, type MapRef } from 'react-map-gl/maplibre'
 import { POINTS, STOP_ORDER, STOPS, toLngLat, type StopId } from '../data/route'
+import { useI18n } from '../i18n/context'
 import { bearing, pointAlong } from '../lib/geo'
 import { mapLib } from '../lib/maplibre'
 import { FLIGHT_LINE, FULL_ROUTE, type Phase } from '../lib/time'
@@ -85,6 +86,7 @@ interface RouteMapProps {
 export function RouteMap({ selected, onSelect, phase }: RouteMapProps) {
   const mapRef = useRef<MapRef>(null)
   const { colorMode } = useColorMode()
+  const { t } = useI18n()
 
   // Animația liniei punctate Brașov → Sevilla.
   useEffect(() => {
@@ -151,10 +153,10 @@ export function RouteMap({ selected, onSelect, phase }: RouteMapProps) {
 
         {/* Punctele intermediare din Brașov */}
         {[
-          { at: POINTS.home, label: 'Acasă · plec la 02:30' },
-          { at: POINTS.pickup, label: 'Punct de preluare · plecare 03:00' },
+          { id: 'home', at: POINTS.home, label: t.homeMarker },
+          { id: 'pickup', at: POINTS.pickup, label: t.pickupMarker },
         ].map((p) => (
-          <Marker key={p.label} longitude={p.at[1]} latitude={p.at[0]}>
+          <Marker key={p.id} longitude={p.at[1]} latitude={p.at[0]}>
             <Tooltip content={p.label} showArrow>
               <Circle size="3" bg="orange.400" borderWidth="2px" borderColor="white" shadow="sm" />
             </Tooltip>
@@ -174,8 +176,8 @@ export function RouteMap({ selected, onSelect, phase }: RouteMapProps) {
             >
               <FlagButton
                 variant={stop.variant}
-                name={stop.name}
-                subtitle={stop.tag}
+                name={t.stops[id].name}
+                subtitle={t.stops[id].tag}
                 selected={selected === id}
                 onClick={() => onSelect(id)}
               />
@@ -185,7 +187,7 @@ export function RouteMap({ selected, onSelect, phase }: RouteMapProps) {
 
         {/* Poziția mea estimată, în funcție de oră */}
         <Marker longitude={phase.position[0]} latitude={phase.position[1]} style={{ zIndex: 4 }}>
-          <Tooltip content={phase.label} showArrow>
+          <Tooltip content={t.phase[phase.kind]} showArrow>
             <Circle
               size="8"
               bg="yellow.300"
@@ -202,8 +204,8 @@ export function RouteMap({ selected, onSelect, phase }: RouteMapProps) {
       </Map>
 
       <IconButton
-        aria-label="Vezi tot traseul"
-        title="Vezi tot traseul"
+        aria-label={t.fitAll}
+        title={t.fitAll}
         position="absolute"
         bottom="150px"
         right="10px"

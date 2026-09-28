@@ -1,17 +1,20 @@
 import { Box, Flex, Heading, HStack, Text } from '@chakra-ui/react'
 import { useState } from 'react'
 import { Countdown } from './components/Countdown'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { LocationDrawer } from './components/LocationDrawer'
 import { RouteMap } from './components/RouteMap'
 import { ColorModeButton } from './components/ui/color-mode'
 import type { StopId } from './data/route'
 import { useNow } from './hooks/useNow'
+import { useI18n } from './i18n/context'
 import { currentPhase } from './lib/time'
 
 export default function App() {
   const now = useNow()
   const phase = currentPhase(now)
   const [selected, setSelected] = useState<StopId | null>(null)
+  const { t } = useI18n()
 
   return (
     <Flex direction="column" h="100dvh" bg="bg">
@@ -33,7 +36,7 @@ export default function App() {
               Sevilla Coming ✈
             </Heading>
             <Text fontSize="sm" color="fg.muted">
-              Brașov → București (Otopeni) → Sevilla · 20 octombrie 2026
+              {t.route}
             </Text>
           </Box>
           <Box display={{ md: 'none' }}>
@@ -50,6 +53,7 @@ export default function App() {
 
       <Box as="main" position="relative" flex="1">
         <RouteMap selected={selected} onSelect={setSelected} phase={phase} />
+        <LanguageSwitcher />
       </Box>
 
       <LocationDrawer

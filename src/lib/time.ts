@@ -1,4 +1,5 @@
 import { eventTime, POINTS, toLngLat } from '../data/route'
+import type { Dict } from '../i18n/translations'
 import { greatCircle, pointAlong } from './geo'
 
 export interface Remaining {
@@ -21,35 +22,37 @@ export function remaining(target: number, now: number): Remaining {
   }
 }
 
-export function formatClock(iso: string | number, timeZone: string) {
-  return new Intl.DateTimeFormat('ro-RO', {
+export function formatClock(iso: string | number, timeZone: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
+    hourCycle: 'h23',
     timeZone,
   }).format(new Date(iso))
 }
 
-export function formatDate(iso: string | number, timeZone: string) {
-  return new Intl.DateTimeFormat('ro-RO', {
+export function formatDate(iso: string | number, timeZone: string, locale: string) {
+  const s = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
     year: 'numeric',
     timeZone,
   }).format(new Date(iso))
+  return s.charAt(0).toLocaleUpperCase(locale) + s.slice(1)
 }
 
 /** „peste 2z 3h 10m” / „acum 5m” — scurt, pentru evenimente. */
-export function relative(target: number, now: number) {
+export function relative(target: number, now: number, t: Dict) {
   const diff = target - now
   const r = remaining(Math.abs(diff), 0)
   const parts = [
-    r.days && `${r.days}z`,
-    r.hours && `${r.hours}h`,
-    r.minutes && `${r.minutes}m`,
-    !r.days && !r.hours && `${r.seconds}s`,
+    r.days && `${r.days}${t.short.d}`,
+    r.hours && `${r.hours}${t.short.h}`,
+    r.minutes && `${r.minutes}${t.short.m}`,
+    !r.days && !r.hours && `${r.seconds}${t.short.s}`,
   ].filter(Boolean)
-  return diff >= 0 ? `peste ${parts.join(' ')}` : `acum ${parts.join(' ')}`
+  return diff >= 0 ? t.future(parts.join(' ')) : t.past(parts.join(' '))
 }
 
 export const BUS_LINE: [number, number][] = [
@@ -64,7 +67,6 @@ export type PhaseKind = 'home' | 'walk' | 'bus' | 'airport' | 'flight' | 'arrive
 
 export interface Phase {
   kind: PhaseKind
-  label: string
   /** Poziția mea estimată, [lng, lat]. */
   position: [number, number]
   /** Progresul pe întreg traseul, 0..1 (în funcție de timp). */
@@ -86,33 +88,29 @@ export function currentPhase(now: number): Phase {
   const progress = Math.min(Math.max(frac(tLeave, tLand), 0), 1)
   const [home, pickup, otp] = BUS_LINE
 
-  if (now < tLeave) return { kind: 'home', label: 'Încă acasă, în Brașov', position: home, progress }
+  if (now < tLeave) return { kind: 'home', position: home, progress }
   if (now < tBus)
     return {
       kind: 'walk',
-      label: 'Spre punctul de preluare',
       position: lerp(home, pickup, frac(tLeave, tBus)),
       progress,
     }
   if (now < tOtp)
     return {
       kind: 'bus',
-      label: 'Cu cursa specială spre Otopeni',
       position: lerp(pickup, otp, frac(tBus, tOtp)),
       progress,
     }
   if (now < tOff)
-    return { kind: 'airport', label: 'În Aeroportul Otopeni', position: otp, progress }
+    return { kind: 'airport', position: otp, progress }
   if (now < tLand)
     return {
       kind: 'flight',
-      label: 'În zbor spre Sevilla ✈',
       position: pointAlong(FLIGHT_LINE, frac(tOff, tLand)),
       progress,
     }
   return {
     kind: 'arrived',
-    label: 'Am ajuns în Sevilla! 🎉',
     position: toLngLat(POINTS.sevilla),
     progress,
   }
