@@ -1,0 +1,40 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* Steagul „flutură” */
+.flag-cloth {
+  transform-origin: 6px 17px;
+  animation: flag-wave 2.4s ease-in-out infinite;
+}
+
+@keyframes flag-wave {
+  0%, 100% { transform: skewY(0deg) scaleX(1); }
+  25% { transform: skewY(-3deg) scaleX(0.96); }
+  50% { transform: skewY(0deg) scaleX(0.92); }
+  75% { transform: skewY(3deg) scaleX(0.96); }
+}
+
+/* Pulsul markerului „eu” */
+.me-pulse {
+  animation: me-pulse 1.8s ease-out infinite;
+}
+
+@keyframes me-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.7); }
+  100% { box-shadow: 0 0 0 16px rgba(250, 204, 21, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flag-cloth,
+  .me-pulse {
+    animation: none;
+  }
+}
+
+.maplibregl-marker:has(button) {
+  cursor: pointer;
+}
