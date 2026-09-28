@@ -3,6 +3,8 @@ import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // site-ul e servit din https://razvanpra.github.io/SevillaComing/
+  base: '/SevillaComing/',
   plugins: [react()],
   worker: {
     // worker-ul MapLibre 6 este un modul ES
